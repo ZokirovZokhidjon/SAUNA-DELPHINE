@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Delfin - РАҲБАРИЯТ НАЗОРАТИ</title>
+    <style>
+        body { background: #000; color: #00ff41; font-family: 'Courier New', monospace; padding: 15px; margin: 0; }
+        .header { text-align: center; border-bottom: 2px solid #00ff41; padding-bottom: 10px; margin-bottom: 20px; }
+        
+        /* КАРТОЧКАЛАР - СТАТИСТИКА */
+        .stats-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .stat-card { 
+            flex: 1 1 200px; border: 1px solid #00ff41; padding: 15px; 
+            text-align: center; background: rgba(0, 255, 65, 0.05); border-radius: 10px;
+        }
+        .stat-card h3 { margin: 0; font-size: 14px; opacity: 0.8; }
+        .stat-card p { margin: 5px 0 0; font-size: 24px; font-weight: bold; color: #fff; }
+
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        .section-title { background: #00ff41; color: #000; padding: 5px 10px; font-weight: bold; display: inline-block; margin-bottom: 10px; }
+        
+        .table-wrapper { overflow-x: auto; background: rgba(255,255,255,0.02); border: 1px solid #333; border-radius: 5px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { border: 1px solid #333; padding: 10px; text-align: center; }
+        th { background: #111; color: #00ff41; }
+        
+        .btn-excel { 
+            width: 100%; background: #fff; color: #000; border: none; padding: 15px; 
+            font-weight: bold; cursor: pointer; border-radius: 10px; margin-top: 20px; font-size: 16px;
+        }
+
+        /* МОБИЛДА ЖАДВАЛЛАР УСТМА-УСТ ТУШАДИ */
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>DELFIN: BIZNES NAZORATI</h1>
+        <button onclick="location.href='admin.html'">РАҲБАРИЯТ КИРИШ</button>
+        <p id="current-date" style="color: #fff;"></p>
+    </div>
+
+    <div class="stats-container">
+        <div class="stat-card">
+            <h3>ОШХОНА ТУШУМИ</h3>
+            <p id="total-kitchen">0</p>
+        </div>
+        <div class="stat-card" style="border-color: #fff900;">
+            <h3>САУНА/ДУШ ТУШУМИ</h3>
+            <p id="total-sauna" style="color: #fff900;">0</p>
+        </div>
+        <div class="stat-card" style="border-style: double; border-width: 3px;">
+            <h3>УМУМИЙ КАССА (ЖАМИ)</h3>
+            <p id="total-all" style="color: #00ff41;">0</p>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <div>
+            <div class="section-title">ОШХОНА МАЪЛУМОТЛАРИ</div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Вақт</th>
+                            <th>Жой</th>
+                            <th>Таом</th>
+                            <th>Сумма</th>
+                        </tr>
+                    </thead>
+                    <tbody id="kitchen-data"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title" style="background: #fff900;">САУНА ВА ДУШ</div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Вақт</th>
+                            <th>Сауна №</th>
+                            <th>Хизмат</th>
+                            <th>Сумма</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sauna-data"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-excel" onclick="adminExportExcel()">📊 БАРЧА МАЪЛУМОТЛАРНИ ЭКСЕЛГА ЮКЛАШ (КУНЛИК ҲИСОБОТ)</button>
+    
+    <button onclick="location.href='kabinet.html'" style="width:100%; margin-top:10px; background:transparent; color:red; border:1px solid red; padding:10px; cursor:pointer; border-radius:10px;">ОРҚАГА ҚАЙТИШ</button>
+
+    <script>
+        function updateDashboard() {
+            // Иккала базани ҳам оламиз
+            let kitchenDB = JSON.parse(localStorage.getItem('delfin_db') || "[]");
+            let saunaDB = JSON.parse(localStorage.getItem('delfin_kassa_db') || "[]");
+            
+            let kitchenTotal = 0;
+            let saunaTotal = 0;
+
+            // Ошхона жадвалини тўлдириш
+            const kList = document.getElementById('kitchen-data');
+            kList.innerHTML = kitchenDB.map(i => {
+                kitchenTotal += Number(i.sum);
+                return `<tr><td>${i.time}</td><td>${i.place}</td><td>${i.foodName}</td><td>${i.sum.toLocaleString()}</td></tr>`;
+            }).reverse().join('');
+
+            // Сауна жадвалини тўлдириш
+            const sList = document.getElementById('sauna-data');
+            sList.innerHTML = saunaDB.map(i => {
+                saunaTotal += Number(i.sum);
+                return `<tr><td>${i.time}</td><td>${i.sauna}</td><td>${i.service}</td><td>${i.sum.toLocaleString()}</td></tr>`;
+            }).reverse().join('');
+
+            // Статистикани янгилаш
+            document.getElementById('total-kitchen').innerText = kitchenTotal.toLocaleString() + " сўм";
+            document.getElementById('total-sauna').innerText = saunaTotal.toLocaleString() + " сўм";
+            document.getElementById('total-all').innerText = (kitchenTotal + saunaTotal).toLocaleString() + " сўм";
+            
+            document.getElementById('current-date').innerText = "Бугун: " + new Date().toLocaleDateString('uz-UZ');
+        }
+
+        function adminExportExcel() {
+            let kitchenDB = JSON.parse(localStorage.getItem('delfin_db') || "[]");
+            let saunaDB = JSON.parse(localStorage.getItem('delfin_kassa_db') || "[]");
+
+            let csv = "\uFEFFBO'LIM,SANA VA VAQT,OB'EKT,XIZMAT/TAOM,SUMMA\n";
+            
+            kitchenDB.forEach(i => { csv += `OSHXONA,${i.time},${i.place},${i.foodName},${i.sum}\n`; });
+            saunaDB.forEach(i => { csv += `SAUNA/DUSH,${i.time},${i.sauna},${i.service},${i.sum}\n`; });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Delfin_Umumiy_Xisobot_${new Date().toLocaleDateString()}.csv`;
+            link.click();
+        }
+
+        updateDashboard();
+        // Ҳар 10 сонияда янгилаб туради
+        setInterval(updateDashboard, 10000);
+    </script>
+</body>
+</html>

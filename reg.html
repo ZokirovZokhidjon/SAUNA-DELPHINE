@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delfin - Кабинетга кириш</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #121212; color: white;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; margin: 0;
+        }
+        .auth-box {
+            background: #1e1e1e; padding: 30px; border-radius: 15px;
+            border: 2px solid gold; width: 90%; max-width: 400px; text-align: center;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+        h2 { color: gold; margin-bottom: 20px; }
+        select, input {
+            width: 100%; padding: 12px; margin: 10px 0;
+            border-radius: 8px; border: 1px solid #444;
+            background: #252525; color: white; box-sizing: border-box;
+        }
+        .btn {
+            width: 100%; padding: 15px; background: gold; color: black;
+            border: none; border-radius: 8px; font-weight: bold;
+            cursor: pointer; margin-top: 10px;
+        }
+        .link-btn {
+            background: none; border: none; color: #aaa;
+            cursor: pointer; text-decoration: underline; margin-top: 15px;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="login-form" class="auth-box">
+    <h2>🔐 Тизимга кириш</h2>
+    <select id="login-role">
+        <option value="admin">Раҳбарият</option>
+        <option value="kassir">Кассир</option>
+        <option value="oshpaz">Ошпаз</option>
+    </select>
+    <input type="text" id="login-user" placeholder="Логин (Тел рақам)">
+    <input type="password" id="login-pass" placeholder="Парол">
+    <button class="btn" onclick="login()">КИРИШ</button>
+    <button class="link-btn" onclick="toggleForm()">Паролни унутдингизми ёки рўйхатдан ўтиш?</button>
+</div>
+
+<div id="reg-form" class="auth-box hidden">
+    <h2>📝 Рўйхатдан ўтиш</h2>
+    <p style="font-size: 12px; color: #888;">Парол 8-12 белгидан иборат бўлсин</p>
+    <select id="reg-role">
+        <option value="admin">Раҳбарият</option>
+        <option value="kassir">Кассир</option>
+        <option value="oshpaz">Ошпаз</option>
+    </select>
+    <input type="text" id="reg-user" placeholder="Тел рақамингиз">
+    <input type="password" id="reg-pass" placeholder="Янги парол (8-12 белги)">
+    <button class="btn" style="background: lime;" onclick="register()">САҚЛАШ</button>
+    <button class="link-btn" onclick="toggleForm()">Ортга қайтиш</button>
+</div>
+
+<script>
+    // Формаларни алмаштириш
+    function toggleForm() {
+        document.getElementById('login-form').classList.toggle('hidden');
+        document.getElementById('reg-form').classList.toggle('hidden');
+    }
+
+    // Рўйхатдан ўтиш функцияси
+    function register() {
+        const role = document.getElementById('reg-role').value;
+        const user = document.getElementById('reg-user').value;
+        const pass = document.getElementById('reg-pass').value;
+
+        if (user.length < 5) { alert("Логинни тўғри киритинг!"); return; }
+        if (pass.length < 8 || pass.length > 12) { 
+            alert("Диққат! Парол 8 тадан 12 тагача белги бўлиши керак."); 
+            return; 
+        }
+
+        // Маълумотларни браузер хотирасига сақлаш
+        const userData = { user, pass, role };
+        localStorage.setItem('user_' + role, JSON.stringify(userData));
+        
+        alert(role.toUpperCase() + " учун маълумотлар сақланди!");
+        toggleForm();
+    }
+
+    // Тизимга кириш функцияси
+    function login() {
+        const role = document.getElementById('login-role').value;
+        const user = document.getElementById('login-user').value;
+        const pass = document.getElementById('login-pass').value;
+
+        const savedData = JSON.parse(localStorage.getItem('user_' + role));
+
+        if (savedData && savedData.user === user && savedData.pass === pass) {
+            alert("Хуш келибсиз!");
+            // Киргандан кейин тегишли панелга йўналтириш
+            sessionStorage.setItem('active_user', role);
+            window.location.href = 'dashboard.html'; // Бу ерда асосий панел бўлади
+        } else {
+            alert("Логин ёки парол хато! Ёки бу рол ҳали рўйхатдан ўтмаган.");
+        }
+    }
+</script>
+
+</body>
+</html>
