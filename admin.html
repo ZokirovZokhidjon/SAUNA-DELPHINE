@@ -7,55 +7,100 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --gold: #ffd700; --dark: #0b0b0b; --card: #1a1a1a; --red: #ff4757; --green: #2ed573; --blue: #3498db; }
-        body { background: var(--dark); color: white; font-family: sans-serif; margin: 0; padding: 10px; text-align: center; }
-        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-        .login-card { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--gold); width: 90%; max-width: 350px; }
-        .admin-container { width: 100%; max-width: 1000px; display: none; margin: auto; }
-        .header-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .logout-btn { background: var(--red); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; }
-        .settings-bar { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; gap: 15px; border-left: 5px solid var(--gold); }
-        select { background: #333; color: white; border: 1px solid #555; padding: 12px; border-radius: 10px; font-size: 1rem; }
-        .rooms-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
-        .room-card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #222; text-align: center; position: relative; }
+        :root { 
+            --gold: #ffd700; 
+            --dark-overlay: rgba(0, 0, 0, 0.8); 
+            --card: rgba(26, 26, 26, 0.95); 
+            --red: #ff4757; 
+            --green: #2ed573; 
+            --blue: #3498db; 
+        }
+        
+        body { 
+            /* ОРҚА ФОНДА ДЕЛЬФИН РАСМИ 🐬 */
+            background: linear-gradient(var(--dark-overlay), var(--dark-overlay)), 
+                        url('delf.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            padding: 10px; 
+            text-align: center; 
+            min-height: 100vh;
+        }
+
+        /* КИРИШ ОЙНАСИ (LOGIN) ДИЗАЙНИ */
+        .login-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            display: flex; align-items: center; justify-content: center; z-index: 2000; 
+        }
+        .login-card { 
+            background: var(--card); padding: 40px 30px; border-radius: 25px; 
+            border: 2px solid var(--gold); width: 90%; max-width: 380px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+        }
+
+        .admin-container { width: 100%; max-width: 1000px; display: none; margin: auto; padding-top: 20px; }
+        
+        .header-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 10px; }
+        
+        /* ТУГМАЛАР ДИЗАЙНИ */
+        .nav-btn { background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid var(--gold); padding: 12px 20px; border-radius: 50px; cursor: pointer; text-decoration: none; font-size: 0.9rem; font-weight: bold; transition: 0.3s; }
+        .nav-btn:hover { background: var(--gold); color: black; }
+        .logout-btn { background: var(--red); color: white; border: none; padding: 12px 25px; border-radius: 50px; cursor: pointer; font-weight: bold; }
+
+        .settings-bar { background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; gap: 15px; border-left: 8px solid var(--gold); }
+        select { background: #222; color: white; border: 1px solid #444; padding: 12px; border-radius: 12px; font-size: 1rem; cursor: pointer; }
+        
+        /* КАРТОЧКАЛАР */
+        .rooms-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .room-card { background: var(--card); border-radius: 25px; padding: 25px; border: 1px solid #333; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
         .kitchen-card { border-color: var(--blue) !important; }
-        .room-num { font-size: 1.4rem; font-weight: bold; color: var(--gold); margin-bottom: 5px; }
-        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; margin-bottom: 15px; }
-        .status-busy { background: rgba(255, 71, 87, 0.15); color: var(--red); border: 1px solid var(--red); }
-        .status-free { background: rgba(46, 213, 115, 0.15); color: var(--green); border: 1px solid var(--green); }
-        .timer-box { font-size: 2.2rem; font-family: monospace; color: var(--gold); margin: 10px 0; }
-        .kitchen-card .timer-box { visibility: hidden; }
-        .action-btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        
+        .room-num { font-size: 1.5rem; font-weight: bold; color: var(--gold); margin-bottom: 8px; }
+        .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; }
+        .status-busy { background: rgba(255, 71, 87, 0.2); color: var(--red); border: 1px solid var(--red); }
+        .status-free { background: rgba(46, 213, 115, 0.2); color: var(--green); border: 1px solid var(--green); }
+        
+        .timer-box { font-size: 2.5rem; font-family: 'Courier New', monospace; color: var(--gold); margin: 15px 0; font-weight: bold; }
+        .action-btn { width: 100%; padding: 16px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 1.1rem; transition: 0.3s; }
         .btn-busy { background: var(--red); color: white; }
         .btn-free { background: var(--green); color: white; }
-        input { width: 100%; padding: 14px; margin: 15px 0; background: #222; border: 1px solid #444; color: white; border-radius: 10px; text-align: center; }
+        
+        input { width: 100%; padding: 16px; margin: 20px 0; background: rgba(0,0,0,0.5); border: 1px solid #555; color: white; border-radius: 15px; text-align: center; font-size: 1.1rem; }
+        input:focus { border-color: var(--gold); outline: none; }
     </style>
 </head>
 <body>
 
 <div id="login-overlay" class="login-overlay">
     <div class="login-card">
-        <h2 style="color: var(--gold);">АДМИН КИРИШ</h2>
+        <h2 style="color: var(--gold); margin-bottom: 10px;">АДМИН КИРИШ</h2>
+        <div style="width: 50px; height: 2px; background: var(--gold); margin: 0 auto 20px;"></div>
         <input type="password" id="admin-pass" placeholder="Паролни киритинг" autocomplete="off">
         <button class="action-btn btn-free" onclick="checkUnlock()">КИРИШ</button>
+        <div style="margin-top: 20px;">
+            <a href="index.html" style="color: #888; text-decoration: none; font-size: 0.8rem;">🏠 Асосий саҳифага қайтиш</a>
+        </div>
     </div>
 </div>
 
 <div id="admin-main" class="admin-container">
     <div class="header-box">
-        <h1 style="color: var(--gold); margin: 0;">DELFIN CONTROL</h1>
+        <a href="index.html" class="nav-btn">🏠 АСОСИЙ САҲИФА</a>
+        <h1 style="color: var(--gold); margin: 0; font-size: 1.8rem; letter-spacing: 1px;">DELFIN CONTROL</h1>
         <button class="logout-btn" onclick="location.reload()">ЧИҚИШ</button>
     </div>
 
     <div class="settings-bar">
-        <span>⏰ САУНА ВАҚТИ:</span>
+        <span style="font-weight: bold;">⏰ САУНА ВАҚТИ:</span>
         <select id="duration">
             <option value="60">1 соат</option>
             <option value="90">1:30 соат</option>
             <option value="120">2 соат</option>
-            <option value="150">2:30 соат</option>
             <option value="180">3 соат</option>
-            <option value="210">3:30 соат</option>
         </select>
     </div>
 
@@ -63,6 +108,7 @@
 </div>
 
 <script>
+    // FIREBASE СОЗЛАМАЛАРИ (Сизники)
     const firebaseConfig = {
         apiKey: "AIzaSyABO4zuo6GnSNWld4y0H91VI1QSgQewtRU",
         databaseURL: "https://adminsaunadelfin-default-rtdb.europe-west1.firebasedatabase.app"
@@ -72,16 +118,18 @@
 
     function checkUnlock() {
         const passField = document.getElementById('admin-pass');
+        // ПАРОЛНИ ШУ ЕРДА ТЕКШИРАДИ
         if(passField.value === "1234") { 
             document.getElementById('login-overlay').style.display = 'none';
             document.getElementById('admin-main').style.display = 'block';
-            passField.value = ""; // Паролни хотирадан ўчириш
+            passField.value = ""; 
         } else { 
             alert("Парол хато!"); 
-            passField.value = ""; // Хато бўлса ҳам ўчириш
+            passField.value = ""; 
         }
     }
 
+    // МАЪЛУМОТЛАРНИ ЯНГИЛАШ
     db.ref('rooms/').on('value', (snapshot) => {
         const data = snapshot.val();
         const grid = document.getElementById('rooms-list');
@@ -100,7 +148,7 @@
             card.innerHTML = `
                 <div class="room-num">${roomName}</div>
                 <div class="status-badge ${isBusy ? 'status-busy' : 'status-free'}">${room.status}</div>
-                <div id="timer-${i}" class="timer-box">00:00:00</div>
+                <div id="timer-${i}" class="timer-box" style="${isKitchen ? 'display:none' : ''}">00:00:00</div>
                 <button class="action-btn ${isBusy ? 'btn-busy' : 'btn-free'}" onclick="updateStatus(${i}, '${room.status}')">
                     ${isBusy ? 'ОЧИШ' : 'БАНД ҚИЛИШ'}
                 </button>
@@ -123,6 +171,7 @@
         }
     }
 
+    // ТАЙМЕРНИ ИШЛАТИШ
     setInterval(() => {
         const now = Date.now();
         db.ref('rooms/').once('value', (s) => {
