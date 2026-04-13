@@ -86,20 +86,23 @@
             }
         });
 
-        function sendOrder() {
+      function sendOrder() {
             const name = document.getElementById('u-name').value;
             const phone = document.getElementById('u-phone').value;
             const food = document.getElementById('food-room').value;
             const time = document.getElementById('u-time').value;
             const count = document.getElementById('u-count').value;
 
-            if (!selectedSauna) { alert("Илтимос, саунани танланг!"); return; }
-            if (!name || !phone) { alert("Исм ва телефонни киритинг!"); return; }
+            if (!selectedSauna || !name || !phone) { 
+                alert("Маълумотларни тўлиқ киритинг!"); 
+                return; 
+            }
 
-            const botToken = "8762282587:AAGvuGSQ0rDYReCdVdhgF8e4v6-PX7d5xiw";
-            const chatId = "510953181"; 
+            // ЯНГИ БОТ ТОКЕНИ ВА ГРУППА ID
+            const botToken = "8762282587:AAETc9himSsrW1XiSR5UVAdvrwS3s9l55F4";
+            const chatId = "ГРУППА_ID_РАҚАМИНИ_ШУ_ЕРГА_ЁЗИНГ"; // Масалан: "-100123456789"
 
-            const text = `🚀 *ЯНГИ БУЮРТМА (DELPHINE)*\n\n` +
+            const text = `🚀 **ЯНГИ БУЮРТМА (ГРУППА)**\n\n` +
                          `🏢 Сауна: ${selectedSauna}-хона\n` +
                          `👤 Мижоз: ${name}\n` +
                          `📞 Тел: ${phone}\n` +
@@ -113,13 +116,14 @@
             .then(res => res.json())
             .then(data => {
                 if (data.ok) {
-                    alert("Раҳмат " + name + "! Буюртмангиз админга юборилди.");
+                    alert("Раҳмат! Буюртма группага юборилди.");
                     window.location.href = "index.html";
                 } else {
-                    alert("Хатолик: " + data.description + "\n\nИлтимос, @sauna_delphine_bot га кириб бирор хабар ёзинг!");
+                    // Группа хатолигини кўрсатиш
+                    alert("Телеграм хатоси: " + data.description);
                 }
             })
-            .catch(err => alert("Алоқа хатоси!"));
+            .catch(err => alert("Алоқа хатоси! Группага ботни қўшганингизни текширинг."));
         }
     </script>
 </body>
