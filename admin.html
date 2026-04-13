@@ -3,62 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAUNA DELFIN - Admin</title>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    <title>DELFIN ADMIN - Smart Control</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyABO4zuo6GnSNWld4y0H91VI1QSgQewtRU",
-            authDomain: "adminsaunadelfin.firebaseapp.com",
-            projectId: "adminsaunadelfin",
-            storageBucket: "adminsaunadelfin.firebasestorage.app",
-            messagingSenderId: "731782199513",
-            appId: "1:731782199513:web:d79ce8f5b181def4e4e6c8",
-            databaseURL: "https://adminsaunadelfin-default-rtdb.europe-west1.firebasedatabase.app"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
-        window.toggleRoom = function(id, name) {
-            const btn = document.getElementById(id);
-            const currentState = btn.getAttribute('data-status');
-            const newState = currentState === 'БЎШ' ? 'БАНД' : 'БЎШ';
-            set(ref(db, 'rooms/' + id), { name: name, status: newState });
-        };
-
-        onValue(ref(db, 'rooms/'), (snapshot) => {
-            const data = snapshot.val();
-            for (let id in data) {
-                const btn = document.getElementById(id);
-                if (btn) {
-                    btn.innerText = `${data[id].name}: ${data[id].status}`;
-                    btn.setAttribute('data-status', data[id].status);
-                    btn.className = 'room-btn ' + (data[id].status === 'БАНД' ? 'busy' : 'free');
-                }
-            }
-        });
-    </script>
     <style>
-        body { background: #1a1a1a; color: #f4d03f; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; }
-        .container { max-width: 450px; margin: auto; background: #2c1a10; padding: 25px; border: 3px solid #f4d03f; border-radius: 20px; box-shadow: 0 0 20px rgba(244, 208, 63, 0.2); }
-        h1 { margin-bottom: 25px; letter-spacing: 2px; }
-        .room-btn { width: 100%; padding: 18px; margin: 12px 0; border: none; border-radius: 10px; font-size: 20px; cursor: pointer; font-weight: bold; transition: 0.3s; text-transform: uppercase; }
-        .free { background: #27ae60; color: white; box-shadow: 0 4px #1e8449; }
-        .free:active { box-shadow: 0 0 #1e8449; transform: translateY(4px); }
-        .busy { background: #c0392b; color: white; box-shadow: 0 4px #922b21; }
-        .busy:active { box-shadow: 0 0 #922b21; transform: translateY(4px); }
+        :root { --gold: #ffd700; --dark: #0b0b0b; --card: #1a1a1a; --red: #ff4757; --green: #2ed573; }
+        
+        body { 
+            background: var(--dark); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0; padding: 10px; display: flex; justify-content: center;
+        }
+
+        /* Логин ойнаси - ҳамма экранда марказда */
+        .login-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: var(--dark); display: flex; align-items: center; justify-content: center; z-index: 2000; 
+        }
+        .login-card { 
+            background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--gold); 
+            text-align: center; width: 90%; max-width: 350px; box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+        }
+
+        .admin-container { width: 100%; max-width: 1000px; display: none; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .header { text-align: center; margin: 20px 0; }
+        .header h1 { color: var(--gold); font-size: 1.8rem; text-transform: uppercase; letter-spacing: 3px; margin: 0; }
+
+        /* Созламалар панели - Мобильда устма-уст, Компьютерда ёнма-ён */
+        .settings-bar { 
+            background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 25px;
+            display: flex; flex-direction: column; gap: 10px; border-left: 5px solid var(--gold);
+        }
+        @media (min-width: 600px) {
+            .settings-bar { flex-direction: row; align-items: center; justify-content: space-between; }
+        }
+
+        select { background: #333; color: white; border: 1px solid #555; padding: 12px; border-radius: 10px; outline: none; font-size: 1rem; }
+
+        /* КАРТОЧКАЛАР ГРИДИ - ЭНГ МУҲИМ ЖОЙИ */
+        .rooms-grid { 
+            display: grid; 
+            grid-template-columns: 1fr; /* Телефонда 1 тадан карточка */
+            gap: 15px; 
+        }
+        @media (min-width: 480px) { grid-template-columns: repeat(2, 1fr); } /* Планшетда 2 тадан */
+        @media (min-width: 900px) { .rooms-grid { grid-template-columns: repeat(3, 1fr); } } /* Компьютерда 3 тадан */
+
+        .room-card { 
+            background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #222; 
+            text-align: center; transition: 0.3s; display: flex; flex-direction: column; align-items: center;
+        }
+        .room-card:hover { border-color: var(--gold); background: #222; }
+        
+        .room-num { font-size: 1.4rem; font-weight: bold; color: var(--gold); margin-bottom: 5px; }
+        .status-badge { padding: 4px 12px; border-radius: 15px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; margin-bottom: 15px; }
+        .status-busy { background: rgba(255, 71, 87, 0.15); color: var(--red); border: 1px solid var(--red); }
+        .status-free { background: rgba(46, 213, 115, 0.15); color: var(--green); border: 1px solid var(--green); }
+
+        .timer-box { font-size: 2.2rem; font-family: 'Courier New', monospace; color: var(--gold); margin: 10px 0; font-weight: bold; }
+        
+        .action-btn { 
+            width: 100%; padding: 14px; border: none; border-radius: 12px; 
+            font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.2s; 
+        }
+        .btn-busy { background: var(--red); color: white; }
+        .btn-free { background: var(--green); color: white; }
+        .action-btn:active { transform: scale(0.98); }
+
+        input { width: 100%; padding: 14px; margin: 15px 0; background: #222; border: 1px solid #444; color: white; border-radius: 10px; box-sizing: border-box; text-align: center; font-size: 1.1rem; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>DELFIN ADMIN</h1>
-        <button id="s1" data-status="БЎШ" class="room-btn free" onclick="toggleRoom('s1', '1-Сауна')">1-Сауна: БЎШ</button>
-        <button id="s2" data-status="БЎШ" class="room-btn free" onclick="toggleRoom('s2', '2-Сауна')">2-Сауна: БЎШ</button>
-        <button id="s3" data-status="БЎШ" class="room-btn free" onclick="toggleRoom('s3', '3-Сауна')">3-Сауна: БЎШ</button>
-        <button id="s4" data-status="БЎШ" class="room-btn free" onclick="toggleRoom('s4', '4-Сауна')">4-Сауна: БЎШ</button>
-        <button id="s5" data-status="БЎШ" class="room-btn free" onclick="toggleRoom('s5', '5-Сауна')">5-Сауна: БЎШ</button>
+
+<div id="login-overlay" class="login-overlay">
+    <div class="login-card">
+        <h2 style="color: var(--gold); margin-top: 0;">АДМИН КИРИШ</h2>
+        <input type="password" id="admin-pass" placeholder="Парол (1234)">
+        <button class="action-btn btn-free" onclick="checkUnlock()">КИРИШ</button>
     </div>
+</div>
+
+<div id="admin-main" class="admin-container">
+    <div class="header">
+        <h1>DELFIN CONTROL</h1>
+    </div>
+
+    <div class="settings-bar">
+        <span>⏰ БАНД ҚИЛИШ ВАҚТИ:</span>
+        <select id="duration">
+            <option value="60">1 соат</option>
+            <option value="120">2 соат</option>
+            <option value="180">3 соат</option>
+            <option value="0.1">ТЕСТ (6 сония)</option>
+        </select>
+    </div>
+
+    <div id="rooms-list" class="rooms-grid"></div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyABO4zuo6GnSNWld4y0H91VI1QSgQewtRU",
+        databaseURL: "https://adminsaunadelfin-default-rtdb.europe-west1.firebasedatabase.app"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function checkUnlock() {
+        if(document.getElementById('admin-pass').value === "1234") {
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('admin-main').style.display = 'block';
+        } else { alert("Хато!"); }
+    }
+
+    db.ref('rooms/').on('value', (snapshot) => {
+        const data = snapshot.val();
+        const grid = document.getElementById('rooms-list');
+        grid.innerHTML = '';
+
+        for (let i = 1; i <= 5; i++) {
+            const id = 's' + i;
+            const room = data && data[id] ? data[id] : { status: 'БЎШ' };
+            const isBusy = room.status === 'БАНД';
+
+            const card = document.createElement('div');
+            card.className = 'room-card';
+            card.innerHTML = `
+                <div class="room-num">${i}-САУНА</div>
+                <div class="status-badge ${isBusy ? 'status-busy' : 'status-free'}">${room.status}</div>
+                <div id="timer-${i}" class="timer-box">00:00:00</div>
+                <button class="action-btn ${isBusy ? 'btn-busy' : 'btn-free'}" onclick="updateStatus(${i}, '${room.status}')">
+                    ${isBusy ? 'ОЧИШ' : 'БАНД ҚИЛИШ'}
+                </button>
+            `;
+            grid.appendChild(card);
+        }
+    });
+
+    function updateStatus(num, current) {
+        const id = 's' + num;
+        if(current === 'БАНД') {
+            db.ref('rooms/' + id).update({ status: 'БЎШ', until: null });
+        } else {
+            const mins = parseFloat(document.getElementById('duration').value);
+            db.ref('rooms/' + id).update({ status: 'БАНД', until: Date.now() + (mins * 60000) });
+        }
+    }
+
+    setInterval(() => {
+        const now = Date.now();
+        db.ref('rooms/').once('value', (s) => {
+            const d = s.val();
+            if(!d) return;
+            for(let i=1; i<=5; i++) {
+                const r = d['s'+i];
+                const el = document.getElementById('timer-'+i);
+                if(r && r.status === 'БАНД' && r.until) {
+                    const diff = r.until - now;
+                    if(diff > 0) {
+                        const h = Math.floor(diff/3600000).toString().padStart(2,'0');
+                        const m = Math.floor((diff%3600000)/60000).toString().padStart(2,'0');
+                        const s = Math.floor((diff%60000)/1000).toString().padStart(2,'0');
+                        if(el) el.innerText = `${h}:${m}:${s}`;
+                    } else { db.ref('rooms/s'+i).update({status:'БЎШ', until:null}); }
+                } else { if(el) el.innerText = "00:00:00"; }
+            }
+        });
+    }, 1000);
+</script>
 </body>
 </html>

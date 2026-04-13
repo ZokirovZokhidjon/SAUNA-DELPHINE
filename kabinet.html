@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Delfin - Login</title>
+    <style>
+        body { background: #000; color: #00ff41; font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: rgba(0, 20, 0, 0.95); border: 2px solid #00ff41; padding: 40px; border-radius: 20px; box-shadow: 0 0 25px #00ff41; width: 350px; text-align: center; }
+        input, select, button { width: 100%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #00ff41; color: #00ff41; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { background: #00ff41; color: #000; font-weight: bold; cursor: pointer; border: none; }
+        .links { margin-top: 15px; border-top: 1px dotted #00ff41; padding-top: 10px; font-size: 13px; }
+        a { color: #00ff41; text-decoration: none; cursor: pointer; display: block; margin: 5px 0; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div id="login-box">
+        <h2>DELFIN LOGIN</h2>
+        <select id="l-role">
+            <option value="kassir">КАССИР</option>
+            <option value="oshpaz">ОШПАЗ</option>
+            <option value="admin">РАҲБАР</option>
+        </select>
+        <input type="password" id="l-pass" placeholder="[ ПАРОЛЬ ]">
+        <button onclick="doLogin()">КИРИШ</button>
+        <div class="links">
+            <a onclick="toggle('reg-box')">📝 РЎЙХАТДАН ЎТИШ</a>
+            <a href="kabinet.html">← АСОСИЙ МЕНЮГА ҚАЙТИШ</a> 
+            <a href="index.html">← АСОСИЙ САХИФАГА</a> 
+        </div>
+    </div>
+
+    <div id="reg-box" class="hidden">
+        <h2>REGISTRATION</h2>
+        <select id="r-role">
+            <option value="kassir">КАССИР</option>
+            <option value="oshpaz">ОШПАЗ</option>
+            <option value="admin">РАҲБАР</option>
+        </select>
+        <input type="password" id="r-pass" placeholder="ЯНГИ ПАРОЛЬ">
+        <button onclick="doRegister()" style="background: #0088ff; color: #fff;">САҚЛАШ</button>
+        <div class="links"><a onclick="toggle('login-box')">← ОРҚАГА</a></div>
+        
+    </div>
+</div>
+
+<script>
+    function toggle(id) {
+        document.getElementById('login-box').classList.add('hidden');
+        document.getElementById('reg-box').classList.add('hidden');
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    function doRegister() {
+        const role = document.getElementById('r-role').value;
+        const pass = document.getElementById('r-pass').value;
+        if(pass.length < 3) return alert("Пароль жуда қисқа!");
+        localStorage.setItem('pw_' + role, pass);
+        alert(role.toUpperCase() + " учун пароль сақланди!");
+        toggle('login-box');
+    }
+
+    function doLogin() {
+        const role = document.getElementById('l-role').value;
+        const pass = document.getElementById('l-pass').value;
+        const savedPass = localStorage.getItem('pw_' + role) || "1234";
+
+        if (pass === savedPass) {
+            sessionStorage.setItem('auth', 'true');
+            if (role === "oshpaz") {
+                window.location.href = "cock.html";
+            } else {
+                window.location.href = role + ".html";
+            }
+        } else {
+            alert("ХАТО: Пароль нотўғри!");
+        }
+    }
+</script>
+</body>
+</html>

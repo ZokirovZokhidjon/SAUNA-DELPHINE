@@ -73,40 +73,55 @@
 
         // Телеграмга юбориш функцияси
         function sendOrder() {
-            if (!selectedSauna) { alert("Илтимос, саунани танланг!"); return; }
-            const name = document.getElementById('u-name').value;
-            const phone = document.getElementById('u-phone').value;
-            const time = document.getElementById('u-time').value;
-            const count = document.getElementById('u-count').value;
+    if (!selectedSauna) { alert("Илтимос, саунани танланг!"); return; }
+    
+    const name = document.getElementById('u-name').value;
+    const phone = document.getElementById('u-phone').value;
+    const time = document.getElementById('u-time').value;
+    const count = document.getElementById('u-count').value;
 
-            if (!name || !phone) { alert("Исм ва телефонни киритинг!"); return; }
+    if (!name || !phone) { 
+        alert("Исм ва телефон рақамингизни киритинг!"); 
+        return; 
+    }
 
-            // ⚠️ БУ ЕРГА ЎЗИНГИЗНИНГ БОТ МАЪЛУМОТЛАРИНИ ҚЎЙИНГ
-            const botToken = "712345678:AAH..."; // Сизнинг токен
-            const chatId = "123456789";         // Сизнинг ID
+    // ТЕЛЕГРАМ МАЪЛУМОТЛАРИ
+    const botToken = "8762282587:AAGvuGSQ0rDYReCdVdhgF8e4v6-PX7d5xiw"; 
+    const chatId = "510953181"; // <--- БУ ЕРГА ЎЗИНГИЗНИНГ ID РАҚАМИНГИЗНИ ҚЎЙИНГ
 
-            const text = `🚀 **ЯНГИ БУЮРТМА!**\n\n` +
-                         `🏢 Сауна: ${selectedSauna}-хона\n` +
-                         `👤 Мижоз: ${name}\n` +
-                         `📞 Тел: ${phone}\n` +
-                         `⏰ Вақт: ${time}\n` +
-                         `👥 Киши: ${count}`;
+    const message = `🚀 **ЯНГИ БУЮРТМА (DELPHINE)!**\n\n` +
+                    `🏢 Сауна: ${selectedSauna}-хона\n` +
+                    `👤 Мижоз: ${name}\n` +
+                    `📞 Тел: ${phone}\n` +
+                    `⏰ Вақт: ${time}\n` +
+                    `👥 Киши сони: ${count}`;
 
-            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: chatId, text: text, parse_mode: "Markdown" })
-            })
-            .then(res => {
-                if(res.ok) {
-                    alert("Раҳмат, " + name + "! Буюртма админга юборилди.");
-                    location.reload(); // Саҳифани янгилаш
-                } else {
-                    alert("Хато! Бот токени ёки Chat ID-ни текширинг.");
-                }
-            })
-            .catch(err => alert("Интернетигизни текширинг!"));
+    // Хабарни юбориш
+    fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: chatId,
+            text: message,
+            parse_mode: "Markdown"
+        })
+    })
+    .then(response => {
+        if (response.ok) {
+            alert("Раҳмат " + name + "! Буюртмангиз админга юборилди.");
+            location.reload(); // Муваффақиятли бўлса саҳифани янгилаш
+        } else {
+            // Агар хато бўлса, нима хато эканини билиш учун:
+            return response.json().then(data => {
+                alert("Хатолик: " + data.description);
+            });
         }
+    })
+    .catch(error => {
+        console.error('Хато:', error);
+        alert("Интернетигизни текширинг!");
+    });
+}
     </script>
 </body>
 </html>
