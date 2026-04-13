@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
@@ -8,31 +8,29 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         :root { --orange: #ff6600; --dark: #0b0b0b; --card: #1a1a1a; --green: #2ed573; }
-        body { background: var(--dark); color: white; font-family: sans-serif; text-align: center; padding: 15px; }
-        .order-card { background: var(--card); border: 1px solid var(--orange); border-radius: 20px; padding: 25px; max-width: 450px; margin: auto; position: relative; }
+        body { background: var(--dark); color: white; font-family: sans-serif; text-align: center; padding: 10px; margin: 0; }
+        .order-card { background: var(--card); border: 1px solid var(--orange); border-radius: 20px; padding: 20px; max-width: 450px; margin: 20px auto; box-sizing: border-box; }
         .exit-link { display: block; text-align: left; color: #888; text-decoration: none; font-size: 0.9rem; margin-bottom: 15px; }
-        .selector-label { margin: 15px 0 10px; display: block; color: #aaa; font-size: 0.9rem; text-align: left; }
-        .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-        .s-btn { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: 0.3s; }
+        .selector-label { margin: 15px 0 5px; display: block; color: #aaa; font-size: 0.8rem; text-align: left; text-transform: uppercase; }
+        .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+        .s-btn { padding: 12px 5px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.85rem; transition: 0.2s; }
         .s-btn.busy { background: #333; color: #666; cursor: not-allowed; border: 1px solid #ff4757; }
         .s-btn.free { background: #222; color: var(--green); border: 1px solid var(--green); }
-        .s-btn.selected { background: var(--orange); color: white; border-color: var(--orange); transform: scale(1.05); }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; background: #222; border: 1px solid #444; color: white; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
-        .confirm-btn { width: 100%; padding: 16px; background: var(--orange); border: none; color: white; font-weight: bold; border-radius: 12px; cursor: pointer; margin-top: 15px; font-size: 1.1rem; }
-        .confirm-btn:active { transform: scale(0.98); }
+        .s-btn.selected { background: var(--orange); color: white; transform: scale(1.05); }
+        input, select { width: 100%; padding: 12px; margin: 5px 0; background: #222; border: 1px solid #444; color: white; border-radius: 10px; box-sizing: border-box; font-size: 1rem; }
+        .confirm-btn { width: 100%; padding: 16px; background: var(--orange); border: none; color: white; font-weight: bold; border-radius: 12px; cursor: pointer; margin-top: 20px; font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
     <div class="order-card">
         <a href="index.html" class="exit-link">← ОРТГА ҚАЙТИШ</a>
-        <h2>SAUNA <span style="color:var(--orange)">DELPHINE</span></h2>
-        <p style="font-size: 0.8rem; color: #888;">ОНЛАЙН БРОН ҚИЛИШ МАРКАЗИ</p>
+        <h2 style="margin: 0;">SAUNA <span style="color:var(--orange)">DELPHINE</span></h2>
         
         <label class="selector-label">САУНАНИ ТАНЛАНГ:</label>
         <div id="sauna-btns" class="btn-grid"></div>
 
-        <label class="selector-label">ОВҚАТЛАНИШ УЧУН ЖОЙ (ИХТИЁРИЙ):</label>
+        <label class="selector-label">ОВҚАТЛАНИШ УЧУН ЖОЙ:</label>
         <select id="food-room">
             <option value="Керак эмас">Керак эмас</option>
             <option value="1-Ошхона">1-Ошхона</option>
@@ -41,10 +39,10 @@
         </select>
 
         <input type="text" placeholder="ИСМИНГИЗ" id="u-name">
-        <input type="tel" placeholder="ТЕЛЕФОН РАҚАМ" id="u-phone">
+        <input type="tel" placeholder="+998" id="u-phone">
         
-        <div style="display: flex; gap: 10px;">
-            <div style="flex: 2;">
+        <div style="display: flex; gap: 10px; text-align: left;">
+            <div style="flex: 1.5;">
                 <label class="selector-label">КЕЛИШ ВАҚТИ:</label>
                 <input type="datetime-local" id="u-time">
             </div>
@@ -66,24 +64,19 @@
         const db = firebase.database();
         let selectedSauna = null;
 
-        // Firebase-дан статус олиш
         db.ref('rooms/').on('value', (snapshot) => {
             const rooms = snapshot.val();
             const container = document.getElementById('sauna-btns');
             container.innerHTML = '';
-
             for (let i = 1; i <= 5; i++) {
                 const id = 's' + i;
                 const status = (rooms && rooms[id]) ? rooms[id].status : 'БЎШ';
                 const isBusy = (status === 'БАНД');
-
                 const btn = document.createElement('button');
                 btn.className = 's-btn ' + (isBusy ? 'busy' : 'free');
                 if (selectedSauna == i) btn.classList.add('selected');
-                
                 btn.innerText = i + (isBusy ? " БАНД" : " БЎШ");
                 btn.disabled = isBusy;
-                
                 btn.onclick = () => {
                     selectedSauna = i;
                     document.querySelectorAll('.s-btn').forEach(b => b.classList.remove('selected'));
@@ -101,40 +94,32 @@
             const count = document.getElementById('u-count').value;
 
             if (!selectedSauna) { alert("Илтимос, саунани танланг!"); return; }
-            if (!name || !phone) { alert("Исм ва телефон рақамингизни киритинг!"); return; }
+            if (!name || !phone) { alert("Исм ва телефонни киритинг!"); return; }
 
-            const botToken = "8762282587:AAGvuGSQ0rDYReCdVdhgF8e4v6-PX7d5xiw"; 
+            const botToken = "8762282587:AAGvuGSQ0rDYReCdVdhgF8e4v6-PX7d5xiw";
             const chatId = "510953181"; 
 
-            const message = `🚀 **ЯНГИ БУЮРТМА!**\n\n` +
-                            `🏢 Сауна: ${selectedSauna}-хона\n` +
-                            `👤 Мижоз: ${name}\n` +
-                            `📞 Тел: ${phone}\n` +
-                            `🍽 Ошхона: ${food}\n` +
-                            `⏰ Вақт: ${time}\n` +
-                            `👥 Киши сони: ${count}`;
+            const text = `🚀 *ЯНГИ БУЮРТМА (DELPHINE)*\n\n` +
+                         `🏢 Сауна: ${selectedSauna}-хона\n` +
+                         `👤 Мижоз: ${name}\n` +
+                         `📞 Тел: ${phone}\n` +
+                         `🍽 Ошхона: ${food}\n` +
+                         `⏰ Вақт: ${time}\n` +
+                         `👥 Киши: ${count}`;
 
-            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                    text: message,
-                    parse_mode: "Markdown"
-                })
-            })
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
+
+            fetch(url)
             .then(res => res.json())
             .then(data => {
                 if (data.ok) {
                     alert("Раҳмат " + name + "! Буюртмангиз админга юборилди.");
                     window.location.href = "index.html";
                 } else {
-                    alert("Хатолик: " + data.description);
+                    alert("Хатолик: " + data.description + "\n\nИлтимос, @sauna_delphine_bot га кириб бирор хабар ёзинг!");
                 }
             })
-            .catch(err => {
-                alert("Интернетигизни текширинг!");
-            });
+            .catch(err => alert("Алоқа хатоси!"));
         }
     </script>
 </body>
