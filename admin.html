@@ -23,7 +23,8 @@
 
         window.toggleRoom = function(id, name) {
             const btn = document.getElementById(id);
-            const newState = btn.classList.contains('free') ? 'БАНД' : 'БЎШ';
+            const currentState = btn.getAttribute('data-status');
+            const newState = currentState === 'БЎШ' ? 'БАНД' : 'БЎШ';
             set(ref(db, 'rooms/' + id), { name: name, status: newState });
         };
 
@@ -33,25 +34,31 @@
                 const btn = document.getElementById(id);
                 if (btn) {
                     btn.innerText = `${data[id].name}: ${data[id].status}`;
+                    btn.setAttribute('data-status', data[id].status);
                     btn.className = 'room-btn ' + (data[id].status === 'БАНД' ? 'busy' : 'free');
                 }
             }
         });
     </script>
     <style>
-        body { background: #1a1a1a; color: #f4d03f; font-family: sans-serif; text-align: center; padding: 20px; }
-        .container { max-width: 400px; margin: auto; background: #2c1a10; padding: 20px; border: 2px solid #f4d03f; border-radius: 15px; }
-        .room-btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; font-weight: bold; }
-        .free { background: #27ae60; color: white; }
-        .busy { background: #c0392b; color: white; }
+        body { background: #1a1a1a; color: #f4d03f; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; }
+        .container { max-width: 450px; margin: auto; background: #2c1a10; padding: 25px; border: 3px solid #f4d03f; border-radius: 20px; box-shadow: 0 0 20px rgba(244, 208, 63, 0.2); }
+        h1 { margin-bottom: 25px; letter-spacing: 2px; }
+        .room-btn { width: 100%; padding: 18px; margin: 12px 0; border: none; border-radius: 10px; font-size: 20px; cursor: pointer; font-weight: bold; transition: 0.3s; text-transform: uppercase; }
+        .free { background: #27ae60; color: white; box-shadow: 0 4px #1e8449; }
+        .free:active { box-shadow: 0 0 #1e8449; transform: translateY(4px); }
+        .busy { background: #c0392b; color: white; box-shadow: 0 4px #922b21; }
+        .busy:active { box-shadow: 0 0 #922b21; transform: translateY(4px); }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>DELFIN ADMIN</h1>
-        <button id="s1" class="room-btn free" onclick="toggleRoom('s1', '1-Сауна')">1-Сауна: БЎШ</button>
-        <button id="s2" class="room-btn free" onclick="toggleRoom('s2', '2-Сауна')">2-Сауна: БЎШ</button>
-        <button id="s3" class="room-btn free" onclick="toggleRoom('s3', '3-Сауна')">3-Сауна: БЎШ</button>
+        <button id="s1" data-status="БЎШ" class="room-btn free" onclick="toggleRoom('s1', '1-Сауна')">1-Сауна: БЎШ</button>
+        <button id="s2" data-status="БЎШ" class="room-btn free" onclick="toggleRoom('s2', '2-Сауна')">2-Сауна: БЎШ</button>
+        <button id="s3" data-status="БЎШ" class="room-btn free" onclick="toggleRoom('s3', '3-Сауна')">3-Сауна: БЎШ</button>
+        <button id="s4" data-status="БЎШ" class="room-btn free" onclick="toggleRoom('s4', '4-Сауна')">4-Сауна: БЎШ</button>
+        <button id="s5" data-status="БЎШ" class="room-btn free" onclick="toggleRoom('s5', '5-Сауна')">5-Сауна: БЎШ</button>
     </div>
 </body>
 </html>
