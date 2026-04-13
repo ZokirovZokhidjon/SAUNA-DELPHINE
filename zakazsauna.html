@@ -22,7 +22,6 @@
     </style>
 </head>
 <body>
-
     <div class="order-card">
         <a href="index.html" class="exit-link">← ОРТГА ҚАЙТИШ</a>
         <h2 style="margin: 0;">SAUNA <span style="color:var(--orange)">DELPHINE</span></h2>
@@ -86,7 +85,7 @@
             }
         });
 
-      function sendOrder() {
+        function sendOrder() {
             const name = document.getElementById('u-name').value;
             const phone = document.getElementById('u-phone').value;
             const food = document.getElementById('food-room').value;
@@ -98,11 +97,11 @@
                 return; 
             }
 
-            // ЯНГИ БОТ ТОКЕНИ ВА ГРУППА ID
+            // ЯНГИ ТОКЕН ВА СИЗНИНГ ID ✅
             const botToken = "8762282587:AAETc9himSsrW1XiSR5UVAdvrwS3s9l55F4";
-            const chatId = "ГРУППА_ID_РАҚАМИНИ_ШУ_ЕРГА_ЁЗИНГ"; // Масалан: "-100123456789"
+            const chatId = "1432886456"; 
 
-            const text = `🚀 **ЯНГИ БУЮРТМА (ГРУППА)**\n\n` +
+            const text = `🚀 **ЯНГИ БУЮРТМА (DELPHINE)**\n\n` +
                          `🏢 Сауна: ${selectedSauna}-хона\n` +
                          `👤 Мижоз: ${name}\n` +
                          `📞 Тел: ${phone}\n` +
@@ -116,14 +115,13 @@
             .then(res => res.json())
             .then(data => {
                 if (data.ok) {
-                    alert("Раҳмат! Буюртма группага юборилди.");
+                    alert("Раҳмат " + name + "! Буюртма юборилди.");
                     window.location.href = "index.html";
                 } else {
-                    // Группа хатолигини кўрсатиш
                     alert("Телеграм хатоси: " + data.description);
                 }
             })
-            .catch(err => alert("Алоқа хатоси! Группага ботни қўшганингизни текширинг."));
+            .catch(err => alert("Алоқа хатоси! Скриншотни текширинг."));
         }
     </script>
 </body>
