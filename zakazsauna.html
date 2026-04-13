@@ -23,7 +23,7 @@
     <div class="order-card">
         <h2>SAUNA <span style="color:#ff6600">DELPHINE</span></h2>
         <p style="font-size: 0.8rem; color: #888;">ОНЛАЙН БРОН ҚИЛИШ МАРКАЗИ</p>
-
+        
         <label class="selector-label">САУНАНИ ТАНЛАНГ:</label>
         <div id="sauna-btns" class="btn-grid"></div>
 
@@ -46,7 +46,7 @@
         const db = firebase.database();
         let selectedSauna = null;
 
-        // Базадан статусларни олиб тугмаларни яратиш
+        // Firebase-дан статус олиш
         db.ref('rooms/').on('value', (snapshot) => {
             const rooms = snapshot.val();
             const container = document.getElementById('sauna-btns');
@@ -59,9 +59,8 @@
 
                 const btn = document.createElement('button');
                 btn.className = 's-btn ' + (isBusy ? 'busy' : 'free');
-                if (selectedSauna == i) btn.classList.add('selected');
-                
-                btn.innerText = i + (isBusy ? " БАНД" : "");
+                if (selectedSauna == i) btn.classList.add('selected');                                
+                btn.innerText = i + (isBusy ? " БАНД" : " БЎШ");
                 btn.disabled = isBusy;
                 btn.onclick = () => {
                     selectedSauna = i;
@@ -72,13 +71,41 @@
             }
         });
 
+        // Телеграмга юбориш функцияси
         function sendOrder() {
             if (!selectedSauna) { alert("Илтимос, саунани танланг!"); return; }
             const name = document.getElementById('u-name').value;
-            if (!name) { alert("Илтимос, исмингизни ёзинг!"); return; }
+            const phone = document.getElementById('u-phone').value;
+            const time = document.getElementById('u-time').value;
+            const count = document.getElementById('u-count').value;
 
-            alert("Раҳмат, " + name + "! " + selectedSauna + "-сауна бўйича буюртмангиз қабул қилинди.");
-            // Бу ерда буюртмани базага сақлаш кодини қўшишингиз мумкин
+            if (!name || !phone) { alert("Исм ва телефонни киритинг!"); return; }
+
+            // ⚠️ БУ ЕРГА ЎЗИНГИЗНИНГ БОТ МАЪЛУМОТЛАРИНИ ҚЎЙИНГ
+            const botToken = "712345678:AAH..."; // Сизнинг токен
+            const chatId = "123456789";         // Сизнинг ID
+
+            const text = `🚀 **ЯНГИ БУЮРТМА!**\n\n` +
+                         `🏢 Сауна: ${selectedSauna}-хона\n` +
+                         `👤 Мижоз: ${name}\n` +
+                         `📞 Тел: ${phone}\n` +
+                         `⏰ Вақт: ${time}\n` +
+                         `👥 Киши: ${count}`;
+
+            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: chatId, text: text, parse_mode: "Markdown" })
+            })
+            .then(res => {
+                if(res.ok) {
+                    alert("Раҳмат, " + name + "! Буюртма админга юборилди.");
+                    location.reload(); // Саҳифани янгилаш
+                } else {
+                    alert("Хато! Бот токени ёки Chat ID-ни текширинг.");
+                }
+            })
+            .catch(err => alert("Интернетигизни текширинг!"));
         }
     </script>
 </body>
