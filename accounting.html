@@ -2,81 +2,144 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <title>Бухгалтерия</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Бухгалтерия ва Ҳисоб-китоб</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        .form-group { margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        .income { color: green; font-weight: bold; }
-        .expense { color: red; font-weight: bold; }
-        .balance-box { font-size: 20px; margin-top: 20px; padding: 15px; background: #2c3e50; color: white; border-radius: 8px; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #fff; color: #000; margin: 0; padding: 20px; }
+        h1 { font-size: 24px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        
+        .header-nav { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .exit-btn { background: #f44336; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-weight: bold; }
+
+        .form-box { background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd; display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; }
+        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        .save-btn { background: #000; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .save-btn:hover { background: #333; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #f2f2f2; text-align: left; padding: 12px; border-bottom: 2px solid #000; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+        
+        .balance-bar { background: #2c3e50; color: #fff; padding: 20px; border-radius: 8px; margin-top: 30px; font-size: 1.4rem; font-weight: bold; }
+        
+        .btn-del { color: #f44336; cursor: pointer; border: none; background: none; font-size: 1.2rem; margin-left: 10px; }
+        .btn-edit { color: #2196F3; cursor: pointer; border: none; background: none; font-size: 1.2rem; }
+        
+        @media (max-width: 600px) {
+            .form-box { flex-direction: column; }
+            input, select, .save-btn { width: 100%; }
+        }
     </style>
 </head>
 <body>
-    <h2>Бухгалтерия ва Ҳисоб-китоб</h2>
 
-    <div class="form-group">
-        <input type="text" id="reason" placeholder="Изоҳ (масалан: Сауна №2 ремонт)">
-        <input type="number" id="cash" placeholder="Сумма">
-        <select id="cat">
-            <option value="income">Кирим (Доход)</option>
-            <option value="tech">Техник расход</option>
-            <option value="lunch">Тушлик/Овқат</option>
-            <option value="other">Бошқа расход</option>
-        </select>
-        <button onclick="saveFinance()">Рўйхатга олиш</button>
-    </div>
+<div class="header-nav">
+    <h1>Бухгалтерия ва Ҳисоб-китоб</h1>
+    <a href="index.html" class="exit-btn">ЧИҚИШ</a>
+</div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Сана</th>
-                <th>Изоҳ</th>
-                <th>Категория</th>
-                <th>Сумма</th>
-            </tr>
-        </thead>
-        <tbody id="log"></tbody>
-    </table>
+<div class="form-box">
+    <input type="text" id="desc" placeholder="Изоҳ (масалан: Сауна-1 тушуми)" style="flex: 3;">
+    <input type="number" id="amt" placeholder="Сумма" style="flex: 1;">
+    <select id="cat" style="flex: 1;">
+        <option value="Тушум">Тушум</option>
+        <option value="Овқат">Тушлик/Овқат</option>
+        <option value="Харажат">Бошқа харажат</option>
+    </select>
+    <button class="save-btn" id="save-btn" onclick="saveData()">РЎЙХАТГА ОЛИШ</button>
+</div>
 
-    <div class="balance-box" id="result">Баланс: 0 сўм</div>
+<table>
+    <thead>
+        <tr>
+            <th>Сана</th>
+            <th>Изоҳ</th>
+            <th>Категория</th>
+            <th>Сумма (сўм)</th>
+            <th>Амаллар</th>
+        </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+</table>
 
-    <script>
-        function saveFinance() {
-            const reason = document.getElementById('reason').value;
-            const cash = parseFloat(document.getElementById('cash').value);
-            const cat = document.getElementById('cat').value;
-            
-            if(!reason || !cash) return;
+<div class="balance-bar" id="balance">Умумий Баланс: 0 сўм</div>
 
-            const logs = JSON.parse(localStorage.getItem('moneyLogs')) || [];
-            logs.push({ date: new Date().toLocaleString(), reason, cash, cat });
-            localStorage.setItem('moneyLogs', JSON.stringify(logs));
-            showLogs();
-        }
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyABO4zuo6GnSNWld4y0H91VI1QSgQewtRU",
+        databaseURL: "https://adminsaunadelfin-default-rtdb.europe-west1.firebasedatabase.app"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let editKey = null;
 
-        function showLogs() {
-            const logs = JSON.parse(localStorage.getItem('moneyLogs')) || [];
-            const tbody = document.getElementById('log');
-            let total = 0;
-            tbody.innerHTML = '';
+    // Маълумотни сақлаш
+    function saveData() {
+        const desc = document.getElementById('desc').value;
+        const amt = parseFloat(document.getElementById('amt').value);
+        const cat = document.getElementById('cat').value;
 
-            logs.forEach(item => {
-                const isIncome = item.cat === 'income';
-                total += isIncome ? item.cash : -item.cash;
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${item.date}</td>
-                        <td>${item.reason}</td>
-                        <td>${item.cat}</td>
-                        <td class="${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '-'}${item.cash}</td>
-                    </tr>
-                `;
+        if(!desc || !amt) return alert("Маълумотни тўлиқ киритинг!");
+
+        // Тушум бўлса мусбат, қолгани манфий сумма
+        const finalAmt = cat === 'Тушум' ? Math.abs(amt) : -Math.abs(amt);
+        const data = { desc, amt: finalAmt, cat, date: new Date().toLocaleString() };
+
+        if(editKey) {
+            db.ref('finance/' + editKey).update(data).then(() => {
+                editKey = null;
+                document.getElementById('save-btn').innerText = "РЎЙХАТГА ОЛИШ";
             });
-            document.getElementById('result').innerText = `Умумий Баланс: ${total} сўм`;
+        } else {
+            db.ref('finance/').push(data);
         }
-        showLogs();
-    </script>
+
+        document.getElementById('desc').value = '';
+        document.getElementById('amt').value = '';
+    }
+
+    // Рўйхатни юклаш
+    db.ref('finance/').on('value', s => {
+        const data = s.val();
+        const body = document.getElementById('table-body');
+        body.innerHTML = '';
+        let total = 0;
+
+        if(data) {
+            Object.entries(data).reverse().forEach(([key, v]) => {
+                total += v.amt;
+                body.innerHTML += `
+                    <tr>
+                        <td style="color: #888; font-size: 0.85rem;">${v.date}</td>
+                        <td>${v.desc}</td>
+                        <td>${v.cat}</td>
+                        <td style="color:${v.amt > 0 ? 'green' : 'red'}; font-weight: bold;">
+                            ${v.amt.toLocaleString()}
+                        </td>
+                        <td>
+                            <button class="btn-edit" onclick="startEdit('${key}', '${v.desc}', ${Math.abs(v.amt)}, '${v.cat}')">✎</button>
+                            <button class="btn-del" onclick="deleteEntry('${key}')">🗑</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+        document.getElementById('balance').innerText = `Умумий Баланс: ${total.toLocaleString()} сўм`;
+    });
+
+    function startEdit(key, desc, amt, cat) {
+        editKey = key;
+        document.getElementById('desc').value = desc;
+        document.getElementById('amt').value = amt;
+        document.getElementById('cat').value = cat;
+        document.getElementById('save-btn').innerText = "САҚЛАШ (ЯНГИЛАШ)";
+        window.scrollTo(0,0);
+    }
+
+    function deleteEntry(key) {
+        if(confirm("Ўчирилсинми?")) db.ref('finance/' + key).remove();
+    }
+</script>
 </body>
 </html>
