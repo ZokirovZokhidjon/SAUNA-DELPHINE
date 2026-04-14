@@ -223,25 +223,47 @@
             const phone = document.getElementById('m-phone').value;
             const portion = document.getElementById(selectedPortionId).value;
 
-            if (!name || !phone) { alert("Маълумотни тўлиқ киритинг!"); return; }
+            if (!name || !phone) { 
+                alert("Маълумотни тўлиқ киритинг!"); 
+                return; 
+            }
 
+            // СОЗЛАМАЛАР ✅
             const botToken = "8762282587:AAETc9himSsrW1XiSR5UVAdvrwS3s9l55F4";
-            const chatId = "1432886456";
+            const channelId = "-1001273563663"; // Сизнинг каналингиз ID-си
 
-            const msg = `🍲 **ЯНГИ ТАОМ БУЮРТМАСИ**\n\n` +
-                        `🍱 Таом: **${selectedFood}**\n` +
-                        `⚖️ Миқдори: ${portion}\n` +
-                        `👤 Мижоз: ${name}\n` +
-                        `📞 Тел: ${phone}`;
+            // ХАБАР МАТНИ (HTML форматида)
+            const msg = `<b>🍲 ЯНГИ ТАОМ БУЮРТМАСИ</b>\n\n` +
+                        `🍱 <b>Таом:</b> ${selectedFood}\n` +
+                        `⚖️ <b>Миқдори:</b> ${portion}\n` +
+                        `👤 <b>Мижоз:</b> ${name}\n` +
+                        `📞 <b>Тел:</b> ${phone}`;
 
-            fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`)
+            // ЮБОРИШ
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: channelId,
+                    text: msg,
+                    parse_mode: 'HTML'
+                })
+            })
             .then(res => res.json())
             .then(data => {
                 if(data.ok) {
-                    alert("Раҳмат! Буюртма ботга юборилди.");
+                    alert("Раҳмат! Буюртма каналга юборилди.");
                     closeOrder();
+                    // Маълумотларни тозалаш
+                    document.getElementById('m-name').value = "";
+                    document.getElementById('m-phone').value = "";
+                } else {
+                    alert("Хатолик: " + data.description);
                 }
-            });
+            })
+            .catch(err => alert("Алоқа хатоси!"));
         }
     </script>
 </body>

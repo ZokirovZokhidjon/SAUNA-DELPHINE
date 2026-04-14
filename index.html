@@ -17,58 +17,25 @@
             background-size: cover; color: white; text-align: center;
         }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 20, 40, 0.7); z-index: 0; }
-        .content { position: relative; z-index: 1; padding: 20px; max-width: 1000px; margin: auto; }
-
-        h1 { font-size: clamp(2rem, 10vw, 3.5rem); margin-bottom: 5px; }
-        .hint { font-size: 1rem; opacity: 0.8; margin-bottom: 25px; color: #00d2ff; }
-
-        #msg-box { height: 30px; font-weight: bold; font-size: 1.2rem; margin-bottom: 10px; text-shadow: 0 0 10px #000; }
-
-        /* КАРТОЧКАЛАРНИ ТУГМА ҚИЛАМИЗ */
-        .status-grid { 
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
-            gap: 15px; margin-bottom: 30px; 
-        }
-
-        .room-btn { 
-            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);
-            border-radius: 15px; padding: 20px; border: 2px solid rgba(255,255,255,0.2);
-            cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;
-        }
-        .room-btn:hover { transform: translateY(-5px); border-color: white; }
-
-        .status-dot { width: 12px; height: 12px; border-radius: 50%; margin: 0 auto 10px; }
-        
-        /* Бўш (Яшил) */
-        .free { border-color: rgba(46, 213, 115, 0.3); }
-        .free .status-dot { background: var(--green); box-shadow: 0 0 10px var(--green); }
+        .content { position: relative; z-index: 1; padding: 20px; max-width: 1200px; margin: auto; }
+        h1 { font-size: clamp(2.5rem, 10vw, 4rem); margin-bottom: 5px; font-weight: 800; letter-spacing: 2px; }
+        .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .room-btn { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border-radius: 20px; padding: 30px 20px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: all 0.3s ease; }
+        .status-dot { width: 15px; height: 15px; border-radius: 50%; margin: 0 auto 15px; }
+        .free .status-dot { background: var(--green); box-shadow: 0 0 15px var(--green); }
         .free .status-txt { color: var(--green); font-weight: bold; }
-
-        /* Банд (Қизил) */
-        .busy { border-color: var(--red); background: rgba(255, 71, 87, 0.15); }
-        .busy .status-dot { background: var(--red); box-shadow: 0 0 10px var(--red); }
+        .busy .status-dot { background: var(--red); box-shadow: 0 0 15px var(--red); }
         .busy .status-txt { color: var(--red); font-weight: bold; }
-
-        /* ПАСТКИ ТУГМАЛАР */
-        .nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-        .btn { 
-            padding: 12px 25px; border-radius: 8px; border: 1px solid white; 
-            background: rgba(0,0,0,0.5); color: white; text-decoration: none; font-size: 0.9rem;
-        }
-
-        @media (min-width: 768px) { .status-grid { grid-template-columns: repeat(5, 1fr); } }
+        .nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
+        .btn { padding: 15px 30px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.6); color: white; text-decoration: none; font-weight: 600; }
+        @media (min-width: 1024px) { .status-grid { grid-template-columns: repeat(5, 1fr); } }
     </style>
 </head>
 <body>
     <div class="overlay"></div>
     <div class="content">
-        <h1>DELFIN</h1>
-        <p class="hint">Брон қилиш учун бўш саунани танланг</p>
-        <div id="msg-box"></div>
-
-        <div id="status-container" class="status-grid">
-            </div>
-
+        <h1>DELFIN SAUNA</h1>
+        <div id="status-container" class="status-grid"></div>
         <div class="nav">
             <a href="menu.html" class="btn">ТАОМЛАР МЕНЮСИ</a>
             <a href="massage.html" class="btn">Мануал терапия</a>
@@ -77,44 +44,35 @@
     </div>
 
     <script>
+        // БУ ҚИСМГА ТЕГМАНГ - БУ КАРТОЧКАЛАР УЧУН!
         const firebaseConfig = {
             apiKey: "AIzaSyABO4zuo6GnSNWld4y0H91VI1QSgQewtRU",
             databaseURL: "https://adminsaunadelfin-default-rtdb.europe-west1.firebasedatabase.app"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        let currentData = {};
 
-        // Базани реал вақтда кузатиш
         db.ref('rooms/').on('value', (snapshot) => {
-            currentData = snapshot.val();
+            const currentData = snapshot.val();
             const container = document.getElementById('status-container');
             container.innerHTML = '';
-
             for (let i = 1; i <= 5; i++) {
                 const id = 's' + i;
-                const room = currentData && currentData[id] ? currentData[id] : { name: i + '-Сауна', status: 'БЎШ' };
-                const isBusy = room.status === 'БАНД';
-                const sClass = isBusy ? 'busy' : 'free';
-
+                const room = (currentData && currentData[id]) ? currentData[id] : { name: i + '-Сауна', status: 'БЎШ' };
+                const sClass = (room.status === 'БАНД') ? 'busy' : 'free';
                 container.innerHTML += `
                     <div class="room-btn ${sClass}" onclick="handleRoomClick(${i}, '${room.status}')">
                         <div class="status-dot"></div>
-                        <div style="margin-bottom: 5px;">${room.name}</div>
+                        <div style="font-size: 1.1rem; margin-bottom: 8px;">${room.name}</div>
                         <div class="status-txt">${room.status}</div>
                     </div>`;
             }
         });
 
-        // Карточка босилганда ишлайдиган функция
-       function handleRoomClick(num, status) {
-    if (status === 'БАНД') {
-        alert(num + "-сауна ҳозир банд!");
-    } else {
-        // Тўғри файл номини ёзинг
-        window.location.href = "zakazsauna.html?sauna=" + num;
-    }
-}
+        function handleRoomClick(num, status) {
+            if (status === 'БАНД') { alert("Бу сауна банд!"); } 
+            else { window.location.href = "zakazsauna.html?sauna=" + num; }
+        }
     </script>
 </body>
 </html>

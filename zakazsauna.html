@@ -55,6 +55,7 @@
     </div>
 
     <script>
+        // 1. FIREBASE СОЗЛАМАЛАРИ
         const firebaseConfig = {
             apiKey: "AIzaSyABO4zuo6GnSNWld4y0H91VI1QSgQewtRU",
             databaseURL: "https://adminsaunadelfin-default-rtdb.europe-west1.firebasedatabase.app"
@@ -63,9 +64,11 @@
         const db = firebase.database();
         let selectedSauna = null;
 
+        // 2. ХОНАЛАРНИ FIREBASE'ДАН ОЛИШ
         db.ref('rooms/').on('value', (snapshot) => {
             const rooms = snapshot.val();
             const container = document.getElementById('sauna-btns');
+            if(!container) return;
             container.innerHTML = '';
             for (let i = 1; i <= 5; i++) {
                 const id = 's' + i;
@@ -85,6 +88,7 @@
             }
         });
 
+        // 3. БУЮРТМА ЮБОРИШ ФУНКЦИЯСИ
         function sendOrder() {
             const name = document.getElementById('u-name').value;
             const phone = document.getElementById('u-phone').value;
@@ -97,31 +101,38 @@
                 return; 
             }
 
-            // ЯНГИ ТОКЕН ВА СИЗНИНГ ID ✅
-            const botToken = "8762282587:AAETc9himSsrW1XiSR5UVAdvrwS3s9l55F4";
-            const chatId = "1432886456"; 
+            const token = "8762282587:AAETc9himSsrW1XiSR5UVAdvrwS3s9l55F4";
+            const chat_id = "-1001273563663"; 
 
-            const text = `🚀 **ЯНГИ БУЮРТМА (DELPHINE)**\n\n` +
-                         `🏢 Сауна: ${selectedSauna}-хона\n` +
-                         `👤 Мижоз: ${name}\n` +
-                         `📞 Тел: ${phone}\n` +
-                         `🍽 Ошхона: ${food}\n` +
-                         `⏰ Вақт: ${time}\n` +
-                         `👥 Киши: ${count}`;
+            const message = `<b>🚀 ЯНГИ БУЮРТМА (DELPHINE)</b>\n\n` +
+                            `🏠 <b>Сауна:</b> ${selectedSauna}-хона\n` +
+                            `👤 <b>Мижоз:</b> ${name}\n` +
+                            `📞 <b>Тел:</b> ${phone}\n` +
+                            `🍽 <b>Ошхона:</b> ${food}\n` +
+                            `⏰ <b>Вақт:</b> ${time}\n` +
+                            `👥 <b>Киши:</b> ${count}`;
 
-            const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
+            const url = `https://api.telegram.org/bot${token}/sendMessage`;
 
-            fetch(url)
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chat_id,
+                    text: message,
+                    parse_mode: 'HTML'
+                })
+            })
             .then(res => res.json())
             .then(data => {
                 if (data.ok) {
-                    alert("Раҳмат " + name + "! Буюртма юборилди.");
+                    alert("Раҳмат " + name + "! Буюртма каналга юборилди.");
                     window.location.href = "index.html";
                 } else {
-                    alert("Телеграм хатоси: " + data.description);
+                    alert("Хато: " + data.description);
                 }
             })
-            .catch(err => alert("Алоқа хатоси! Скриншотни текширинг."));
+            .catch(err => alert("Алоқа хатоси!"));
         }
     </script>
 </body>
