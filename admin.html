@@ -1,100 +1,80 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DELFIN ADMIN - Secure Control</title>
+    <title>DELFIN CONTROL - Full Admin</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         :root { 
             --gold: #ffd700; 
-            --dark-overlay: rgba(0, 0, 0, 0.8); 
-            --card: rgba(26, 26, 26, 0.95); 
+            --dark-overlay: rgba(0, 0, 0, 0.85); 
+            --card: rgba(26, 26, 26, 0.98); 
             --red: #ff4757; 
             --green: #2ed573; 
-            --blue: #3498db; 
         }
         body { 
-           background-image: url(delf.png);
-            background-size: cover; 
-            background-position: center; 
-            background-attachment: fixed;
-            color: white; 
-            font-family: 'Segoe UI', sans-serif; 
-            margin: 0; 
-            padding: 10px; 
-            text-align: center; 
-            min-height: 100vh;
+            background: linear-gradient(var(--dark-overlay), var(--dark-overlay)), url('delf.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; min-height: 100vh;
         }
 
         /* ЛОГИН ОЙНАСИ */
-        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 2000; }
-        .login-card { background: var(--card); padding: 40px 30px; border-radius: 25px; border: 2px solid var(--gold); width: 90%; max-width: 380px; box-shadow: 0 15px 35px rgba(0,0,0,0.7); }
-
-        input { box-sizing: border-box; width: 100%; padding: 12px; margin: 10px 0; background: rgba(0,0,0,0.5); border: 1px solid #555; color: white; border-radius: 12px; text-align: center; font-size: 1rem; }
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 2000; background: black; }
+        .login-card { background: var(--card); padding: 40px 30px; border-radius: 25px; border: 2px solid var(--gold); width: 90%; max-width: 380px; text-align: center; }
         
+        /* УНИВЕРСАЛ ГОЛД ИНПУТ */
+        .gold-input {
+            box-sizing: border-box; width: 100%; padding: 12px; margin: 10px 0;
+            background: rgba(255, 215, 0, 0.05) !important;
+            border: 1px solid var(--gold) !important;
+            color: var(--gold) !important;
+            border-radius: 12px; text-align: center; font-size: 1rem; outline: none;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(80%) sepia(50%) saturate(1000%) hue-rotate(10deg);
+        }
+
         .admin-container { width: 100%; max-width: 1200px; display: none; margin: auto; padding-top: 20px; }
         .header-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 10px; }
         
-        .nav-btn { background: rgba(255, 215, 0, 0.1); color: var(--gold); border: 1px solid var(--gold); padding: 12px 20px; border-radius: 50px; cursor: pointer; text-decoration: none; font-size: 0.9rem; font-weight: bold; transition: 0.3s; }
-        .logout-btn { background: var(--red); color: white; border: none; padding: 12px 25px; border-radius: 50px; cursor: pointer; font-weight: bold; }
-        
-        .settings-bar { background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; gap: 15px; border-left: 8px solid var(--gold); }
-        select { background: #222; color: white; border: 1px solid #444; padding: 12px; border-radius: 12px; font-size: 1rem; cursor: pointer; }
+        .nav-btn { background: rgba(255, 215, 0, 0.1); color: var(--gold); border: 1px solid var(--gold); padding: 10px 20px; border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 0.9rem; }
+        .logout-btn { background: var(--red); color: white; border: none; padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: bold; }
         
         .rooms-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .room-card { background: var(--card); border-radius: 25px; padding: 20px; border: 1px solid #333; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
-        .room-num { font-size: 1.5rem; font-weight: bold; color: var(--gold); margin-bottom: 8px; }
+        .room-card { background: var(--card); border-radius: 25px; padding: 20px; border: 1px solid #333; text-align: center; border-top: 4px solid var(--gold); }
         
-        /* БАНД САНАЛАР ҚИСМИ */
-        .date-booking-box {
-            margin-top: 15px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            border: 1px dashed #555;
-        }
-        .dates-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            justify-content: center;
-            margin-top: 10px;
-            max-height: 80px;
-            overflow-y: auto;
-        }
-        .date-item {
-            background: var(--red);
-            color: white;
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .del-date { cursor: pointer; font-weight: bold; color: #ffcccc; }
-
-        .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
+        .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; }
         .status-busy { background: rgba(255, 71, 87, 0.2); color: var(--red); border: 1px solid var(--red); }
         .status-free { background: rgba(46, 213, 115, 0.2); color: var(--green); border: 1px solid var(--green); }
         
-        .timer-box { font-size: 2rem; font-family: 'Courier New', monospace; color: var(--gold); margin: 10px 0; font-weight: bold; }
-        .action-btn { width: 100%; padding: 14px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.3s; margin-top: 5px; }
+        .timer-box { font-size: 2.2rem; font-family: monospace; color: var(--gold); margin: 10px 0; font-weight: bold; }
+        
+        .action-btn { width: 100%; padding: 15px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.3s; }
         .btn-busy { background: var(--red); color: white; }
         .btn-free { background: var(--green); color: white; }
-        .btn-save-date { background: var(--blue); color: white; padding: 8px; font-size: 0.8rem; margin-top: 5px; border-radius: 8px; border: none; cursor: pointer; }
+
+        /* БАНД ҚИЛИШ БЛОКИ */
+        .date-booking-box { margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.03); border-radius: 15px; border: 1px dashed #444; }
+        .dates-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
+        .date-item { background: rgba(255, 215, 0, 0.1); border: 1px solid var(--gold); color: var(--gold); padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; display: flex; align-items: center; }
+        .del-date { cursor: pointer; color: var(--red); margin-left: 8px; font-weight: bold; font-size: 1.1rem; }
+
+        @media (max-width: 600px) {
+            .header-box { flex-direction: column; text-align: center; }
+            .rooms-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
 <div id="login-overlay" class="login-overlay">
     <div class="login-card">
-        <h2 style="color: var(--gold); margin-bottom: 10px;">АДМИН КИРИШ</h2>
-        <input type="password" id="admin-pass" placeholder="Паролни киритинг">
+        <h2 style="color: var(--gold);">АДМИН ПАНЕЛ</h2>
+        <input type="password" id="admin-pass" class="gold-input" placeholder="Паролни киритинг">
         <button class="action-btn btn-free" onclick="checkUnlock()">КИРИШ</button>
-        <a href="index.html" style="display: block; margin-top: 15px; color: #888; text-decoration: none; font-size: 0.8rem;">← АСОСИЙ САҲИФА</a>
     </div>
 </div>
 
@@ -105,9 +85,9 @@
         <button class="logout-btn" onclick="location.reload()">ЧИҚИШ</button>
     </div>
 
-    <div class="settings-bar">
-        <span>⏰ САУНА ВАҚТИ (Тезкор):</span>
-        <select id="duration">
+    <div style="background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 25px; border-left: 5px solid var(--gold);">
+        <span>⏰ ТЕЗКОР ВАҚТ:</span>
+        <select id="duration" class="gold-input" style="width: auto; display: inline-block; margin-left: 10px;">
             <option value="60">1 соат</option>
             <option value="90">1:30 соат</option>
             <option value="120">2 соат</option>
@@ -127,18 +107,19 @@
     const db = firebase.database();
 
     function checkUnlock() {
-        if(document.getElementById('admin-pass').value === "1234") { 
+        const pass = document.getElementById('admin-pass').value;
+        if(pass === "7777") { // Асосий Админ
             document.getElementById('login-overlay').style.display = 'none';
             document.getElementById('admin-main').style.display = 'block';
+        } else if(pass === "8888") { // Хисобчи
+            window.location.href = "accounting.html";
         } else { alert("Парол хато!"); }
     }
 
-    // МАЪЛУМОТЛАРНИ ЧИҚАРИШ
     db.ref('rooms/').on('value', (snapshot) => {
         const data = snapshot.val();
         const grid = document.getElementById('rooms-list');
         grid.innerHTML = '';
-        
         for (let i = 1; i <= 8; i++) {
             const id = 's' + i;
             const isKitchen = i > 5;
@@ -146,7 +127,6 @@
             const room = data && data[id] ? data[id] : { status: 'БЎШ' };
             const isBusy = room.status === 'БАНД';
 
-            // Банд саналар рўйхатини тузиш
             let datesHtml = '';
             if (room.bookedDates) {
                 Object.keys(room.bookedDates).forEach(key => {
@@ -155,86 +135,74 @@
             }
 
             grid.innerHTML += `
-                <div class="room-card ${isKitchen ? 'kitchen-card' : ''}">
-                    <div class="room-num">${roomName}</div>
+                <div class="room-card">
+                    <div style="font-size: 1.4rem; font-weight: bold; color: var(--gold);">${roomName}</div>
                     <div class="status-badge ${isBusy ? 'status-busy' : 'status-free'}">${room.status}</div>
-                    
                     <div id="timer-${i}" class="timer-box" style="${isKitchen ? 'display:none' : ''}">00:00:00</div>
-                    
                     <button class="action-btn ${isBusy ? 'btn-busy' : 'btn-free'}" onclick="updateStatus(${i}, '${room.status}')">
                         ${isBusy ? 'ОЧИШ' : 'БАНД ҚИЛИШ'}
                     </button>
-
                     <div class="date-booking-box">
-                        <input type="date" id="date-input-${id}" style="margin:0; padding:8px; font-size:0.8rem;">
-                        <button class="btn-save-date" onclick="addDateBooking('${id}')">САНАНИ БАНД ҚИЛИШ</button>
-                        <div class="dates-list">${datesHtml || '<small style="color:#666">Банд саналар йўқ</small>'}</div>
+                        <input type="date" id="date-${id}" class="gold-input">
+                        <div style="display: flex; gap: 5px;">
+                            <input type="time" id="ts-${id}" class="gold-input" title="Бошланиш">
+                            <input type="time" id="te-${id}" class="gold-input" title="Тугаш">
+                        </div>
+                        <button onclick="addBooking('${id}')" style="background:var(--gold); color:black; border:none; padding:10px; border-radius:10px; width:100%; font-weight:bold; cursor:pointer; margin-top:10px;">САНАНИ САҚЛАШ</button>
+                        <div class="dates-list">${datesHtml || '<small style="color:#666">Банд кунлар йўқ</small>'}</div>
                     </div>
                 </div>`;
         }
     });
 
-    // ТЕЗКОР СТАТУСНИ ЎЗГАРТИРИШ
     function updateStatus(num, current) {
         const id = 's' + num;
         const botToken = "8767447087:AAHcyLpGNyS7obTs8TTUUYl-pny1t73n-RI";
-        const channelId = "-1002324796336"; 
-        const isKitchen = num > 5;
-        const roomName = isKitchen ? (num-5) + "-ОШХОНА" : num + "-САУНА";
+        const channelId = "-1002324796336";
         let nextStatus = (current === 'БАНД') ? 'БЎШ' : 'БАНД';
-
+        
         if(current === 'БАНД') {
             db.ref('rooms/' + id).update({ status: 'БЎШ', until: null });
         } else {
             const mins = parseFloat(document.getElementById('duration').value);
-            const untilTime = isKitchen ? null : Date.now() + (mins * 60000);
+            const untilTime = (num > 5) ? null : Date.now() + (mins * 60000);
             db.ref('rooms/' + id).update({ status: 'БАНД', until: untilTime });
         }
-
-        const emoji = nextStatus === 'БАНД' ? '🔴' : '🟢';
+        
         fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: channelId,
-                text: `${emoji} <b>ҲОЛАТ ЎЗГАРДИ</b>\n🏠 <b>${roomName}</b>: ${nextStatus}`,
-                parse_mode: "HTML"
-            })
+            body: JSON.stringify({ chat_id: channelId, text: `🔔 <b>ҲОЛАТ:</b> ${id} - ${nextStatus}`, parse_mode: "HTML" })
         });
     }
 
-    // САНАНИ БАНД ҚИЛИШ ФУНКЦИЯСИ
-    function addDateBooking(id) {
-        const dateInput = document.getElementById('date-input-' + id);
-        if (!dateInput.value) return alert("Санани танланг!");
-        
-        db.ref('rooms/' + id + '/bookedDates').push(dateInput.value);
-        dateInput.value = '';
+    function addBooking(id) {
+        const d = document.getElementById('date-' + id).value;
+        const s = document.getElementById('ts-' + id).value;
+        const e = document.getElementById('te-' + id).value;
+        if(!d) return alert("Санани танланг!");
+        const txt = d + (s && e ? ` (${s}-${e})` : "");
+        db.ref('rooms/' + id + '/bookedDates').push(txt);
     }
 
-    // САНАНИ ЎЧИРИШ
     function removeDate(id, key) {
-        if (confirm("Ушбу санани ўчирмоқчимисиз?")) {
-            db.ref('rooms/' + id + '/bookedDates/' + key).remove();
-        }
+        if(confirm("Ўчирилсинми?")) db.ref('rooms/' + id + '/bookedDates/' + key).remove();
     }
 
-    // ТАЙМЕР ИНТЕРВАЛИ
     setInterval(() => {
-        db.ref('rooms/').once('value', (s) => {
-            const d = s.val(); if(!d) return;
-            for(let i=1; i<=5; i++) {
-                const r = d['s'+i];
-                const el = document.getElementById('timer-'+i);
-                if(r && r.status === 'БАНД' && r.until) {
+        db.ref('rooms/').once('value', s => {
+            const data = s.val(); if(!data) return;
+            for(let i=1; i<=5; i++){
+                const r = data['s'+i]; const el = document.getElementById('timer-'+i);
+                if(r && r.status === 'БАНД' && r.until){
                     const diff = r.until - Date.now();
-                    if(diff > 0) {
+                    if(diff > 0){
                         const h = Math.floor(diff/3600000).toString().padStart(2,'0');
                         const m = Math.floor((diff%3600000)/60000).toString().padStart(2,'0');
-                        const s = Math.floor((diff%60000)/1000).toString().padStart(2,'0');
-                        if(el) el.innerText = `${h}:${m}:${s}`;
+                        const sec = Math.floor((diff%60000)/1000).toString().padStart(2,'0');
+                        if(el) el.innerText = `${h}:${m}:${sec}`;
                     } else { db.ref('rooms/s'+i).update({status:'БЎШ', until:null}); }
-                } else { if(el) el.innerText = "00:00:00"; }
+                } else if(el) el.innerText = "00:00:00";
             }
         });
     }, 1000);
