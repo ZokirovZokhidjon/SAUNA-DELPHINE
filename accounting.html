@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Бухгалтерия</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .form-group { margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        .income { color: green; font-weight: bold; }
+        .expense { color: red; font-weight: bold; }
+        .balance-box { font-size: 20px; margin-top: 20px; padding: 15px; background: #2c3e50; color: white; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <h2>Бухгалтерия ва Ҳисоб-китоб</h2>
+
+    <div class="form-group">
+        <input type="text" id="reason" placeholder="Изоҳ (масалан: Сауна №2 ремонт)">
+        <input type="number" id="cash" placeholder="Сумма">
+        <select id="cat">
+            <option value="income">Кирим (Доход)</option>
+            <option value="tech">Техник расход</option>
+            <option value="lunch">Тушлик/Овқат</option>
+            <option value="other">Бошқа расход</option>
+        </select>
+        <button onclick="saveFinance()">Рўйхатга олиш</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Сана</th>
+                <th>Изоҳ</th>
+                <th>Категория</th>
+                <th>Сумма</th>
+            </tr>
+        </thead>
+        <tbody id="log"></tbody>
+    </table>
+
+    <div class="balance-box" id="result">Баланс: 0 сўм</div>
+
+    <script>
+        function saveFinance() {
+            const reason = document.getElementById('reason').value;
+            const cash = parseFloat(document.getElementById('cash').value);
+            const cat = document.getElementById('cat').value;
+            
+            if(!reason || !cash) return;
+
+            const logs = JSON.parse(localStorage.getItem('moneyLogs')) || [];
+            logs.push({ date: new Date().toLocaleString(), reason, cash, cat });
+            localStorage.setItem('moneyLogs', JSON.stringify(logs));
+            showLogs();
+        }
+
+        function showLogs() {
+            const logs = JSON.parse(localStorage.getItem('moneyLogs')) || [];
+            const tbody = document.getElementById('log');
+            let total = 0;
+            tbody.innerHTML = '';
+
+            logs.forEach(item => {
+                const isIncome = item.cat === 'income';
+                total += isIncome ? item.cash : -item.cash;
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.date}</td>
+                        <td>${item.reason}</td>
+                        <td>${item.cat}</td>
+                        <td class="${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '-'}${item.cash}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('result').innerText = `Умумий Баланс: ${total} сўм`;
+        }
+        showLogs();
+    </script>
+</body>
+</html>
